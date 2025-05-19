@@ -4,6 +4,14 @@ import { type ServerWebSocket } from "bun"
 
 const { upgradeWebSocket, websocket } = createBunWebSocket<ServerWebSocket>()
 
+type Message = {
+    message: string,
+}
+
+const messages: Message[] = [
+    { message: "Hello" }
+]
+
 const app = new Hono()
 
 app.get("/", (c) => {
@@ -15,8 +23,10 @@ app.get(
     upgradeWebSocket((c) => {
         return {
             onMessage(event, ws) {
-                console.log(`Message from client: ${event.data}`)
-                ws.send("Hello from server!")
+                messages.push({
+                    message: String(event.data)
+                })
+                ws.send(JSON.stringify(messages))
             },
             onClose: () => {
                 console.log("Connection closed")

@@ -1,8 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  type Message = {
+    message: string,
+  }
+
   let socket: null | WebSocket = null;
-  let message = "";
+  let messages: Message[] = [];
+  let newMessage = "";
 
   onMount(() => {
     socket = new WebSocket("ws://localhost:3000/ws");
@@ -10,10 +15,15 @@
       console.log("socket connected");
     };
     socket.onmessage = (event) => {
-      message = event.data;
+      messages = JSON.parse(event.data);
     } 
   })
 </script>
 
-<div>message: {message}</div>
-<button onclick={() => socket?.send("hello from client")}>send</button>
+<ul>
+  {#each messages as message}
+    <li>{message.message}</li>
+  {/each}
+</ul>
+<input bind:value={newMessage}/>
+<button onclick={() => {socket?.send(newMessage); newMessage=""}}>send</button>
