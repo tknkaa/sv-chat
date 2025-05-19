@@ -1,19 +1,19 @@
 <script lang="ts">
-  type Message = {
-    userId: number,
-    message: string,
-  }
+  import { onMount } from "svelte";
 
-  const sampleMessages: Message[] = [
-    {userId: 0, message: "Hello"},
-    {userId: 1, message: "world"}
-  ]
+  let socket: null | WebSocket = null;
+  let message = "";
+
+  onMount(() => {
+    socket = new WebSocket("ws://localhost:3000/ws");
+    socket.onopen = () => {
+      console.log("socket connected");
+    };
+    socket.onmessage = (event) => {
+      message = event.data;
+    } 
+  })
 </script>
 
-<div>Chats</div>
-
-<ul>
-  {#each sampleMessages as message}
-    <li>{message.userId}: {message.message}</li>
-  {/each}
-</ul>
+<div>message: {message}</div>
+<button onclick={() => socket?.send("hello from client")}>send</button>
