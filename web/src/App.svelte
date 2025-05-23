@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
 
   type Message = {
-    message: string,
+    text: string,
   }
 
   let socket: null | WebSocket = null;
@@ -22,7 +22,7 @@
 
 <ul>
   {#each messages as message}
-    <li>{message.message}</li>
+    <li>{message.text}</li>
   {/each}
 </ul>
 <input bind:value={newMessage}/>
