@@ -1,7 +1,6 @@
 import type { ServerWebSocket } from "bun";
 import { Hono } from "hono";
 import { createBunWebSocket } from "hono/bun";
-import { cors } from "hono/cors";
 
 const { upgradeWebSocket, websocket } = createBunWebSocket<ServerWebSocket>();
 
@@ -19,8 +18,6 @@ const server = Bun.serve({
     fetch: app.fetch,
     websocket,
 });
-
-app.use("/*", cors());
 
 app.get(
     "/ws",
