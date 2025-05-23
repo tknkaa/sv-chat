@@ -27,12 +27,8 @@
 </ul>
 <input bind:value={newMessage} />
 <button
-  onclick={async () => {
-    await fetch("http://localhost:3000/message", {
-      method: "POST",
-      mode: "cors",
-      body: JSON.stringify({ text: newMessage }),
-    });
+  onclick={() => {
+    socket?.send(JSON.stringify({ text: newMessage }));
     newMessage = "";
   }}>send</button
 >

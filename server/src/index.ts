@@ -22,17 +22,6 @@ const server = Bun.serve({
 
 app.use("/*", cors());
 
-app.get("/", (c) => {
-    return c.text("Hello Hono");
-});
-
-app.post("/message", async (c) => {
-    const message: Message = await c.req.json();
-    messages.push(message);
-    server.publish(chatRoom, JSON.stringify(messages));
-    return c.text("hoge");
-});
-
 app.get(
     "/ws",
     upgradeWebSocket((c) => {
@@ -40,6 +29,12 @@ app.get(
             onOpen(event, ws) {
                 ws.raw?.subscribe(chatRoom);
                 ws.send(JSON.stringify(messages));
+            },
+            onMessage(event, ws) {
+                const newMessage: Message = JSON.parse(event.data.toString());
+                messages.push(newMessage);
+                console.log(messages);
+                server.publish(chatRoom, JSON.stringify(messages));
             },
             onClose: (event, ws) => {
                 ws.raw?.unsubscribe(chatRoom);
