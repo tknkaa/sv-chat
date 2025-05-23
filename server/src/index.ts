@@ -1,46 +1,51 @@
-import { Hono } from "hono"
-import { createBunWebSocket } from "hono/bun"
-import { type ServerWebSocket } from "bun"
+import type { ServerWebSocket } from "bun";
+import { Hono } from "hono";
+import { createBunWebSocket } from "hono/bun";
+import { cors } from "hono/cors";
 
-const { upgradeWebSocket, websocket } = createBunWebSocket<ServerWebSocket>()
+const { upgradeWebSocket, websocket } = createBunWebSocket<ServerWebSocket>();
 
 type Message = {
-    text: string,
-}
+    text: string;
+};
 
-const messages: Message[] = [
-    { text: "Hello" }
-]
+const messages: Message[] = [{ text: "Hello" }];
 
-const chatRoom = "chat-room"
+const chatRoom = "chat-room";
 
-const app = new Hono()
+const app = new Hono();
+
+const server = Bun.serve({
+    fetch: app.fetch,
+    websocket,
+});
+
+app.use("/*", cors());
 
 app.get("/", (c) => {
-    return c.text("Hello Hono")
-})
+    return c.text("Hello Hono");
+});
 
-app.post("/messages", async (c) => {
-    const message = await c.req.json();
-    messages.push(message.text);
-    console.log(messages);
-})
+app.post("/message", async (c) => {
+    const message: Message = await c.req.json();
+    messages.push(message);
+    server.publish(chatRoom, JSON.stringify(messages));
+    return c.text("hoge");
+});
 
 app.get(
     "/ws",
     upgradeWebSocket((c) => {
         return {
-            onOpen(_event, ws) {
+            onOpen(event, ws) {
                 ws.raw?.subscribe(chatRoom);
+                ws.send(JSON.stringify(messages));
             },
-            onClose: (_event, ws) => {
+            onClose: (event, ws) => {
                 ws.raw?.unsubscribe(chatRoom);
             },
-        }
-    })
-)
+        };
+    }),
+);
 
-export default {
-    fetch: app.fetch,
-    websocket
-}
+export default app;

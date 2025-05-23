@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
 
   type Message = {
-    text: string,
-  }
+    text: string;
+  };
 
   let socket: null | WebSocket = null;
   let messages: Message[] = [];
@@ -16,8 +16,8 @@
     };
     socket.onmessage = (event) => {
       messages = JSON.parse(event.data);
-    } 
-  })
+    };
+  });
 </script>
 
 <ul>
@@ -25,5 +25,14 @@
     <li>{message.text}</li>
   {/each}
 </ul>
-<input bind:value={newMessage}/>
-<button onclick={() => {socket?.send(newMessage); newMessage=""}}>send</button>
+<input bind:value={newMessage} />
+<button
+  onclick={async () => {
+    await fetch("http://localhost:3000/message", {
+      method: "POST",
+      mode: "cors",
+      body: JSON.stringify({ text: newMessage }),
+    });
+    newMessage = "";
+  }}>send</button
+>
